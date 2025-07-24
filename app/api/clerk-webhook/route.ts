@@ -7,6 +7,16 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 
 const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
+interface ClerkUserCreatedEvent {
+  type: "user.created";
+  data: {
+    id: string;
+    email_addresses?: { email_address: string }[];
+    phone_numbers?: { phone_number: string }[];
+    username?: string;
+    first_name?: string;
+  };
+}
 
 export async function GET() {
   return new Response("GET route works", { status: 200 });
@@ -18,7 +28,10 @@ export async function POST(req: NextRequest) {
     const headerList = await headers();
 
     if (!WEBHOOK_SECRET) {
-      return NextResponse.json({ error: "Missing Clerk webhook secret" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing Clerk webhook secret" },
+        { status: 400 }
+      );
     }
 
     const svix = new Webhook(WEBHOOK_SECRET);
@@ -29,7 +42,7 @@ export async function POST(req: NextRequest) {
       "svix-signature": headerList.get("svix-signature") ?? "",
     };
 
-    const event = svix.verify(payload, svixHeaders);
+    const event = svix.verify(payload, svixHeaders) as ClerkUserCreatedEvent;
 
     console.log("✅ Clerk Webhook Event:", event.type);
 
@@ -44,7 +57,10 @@ export async function POST(req: NextRequest) {
     const phone = user.phone_numbers?.[0]?.phone_number;
 
     if (!email || !user.id) {
-      return NextResponse.json({ error: "Missing user ID or email in payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing user ID or email in payload" },
+        { status: 400 }
+      );
     }
 
     const existing = await db.query.users.findFirst({
@@ -52,7 +68,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (existing) {
-      return NextResponse.json({ message: "User already exists" }, { status: 200 });
+      return NextResponse.json(
+        { message: "User already exists" },
+        { status: 200 }
+      );
     }
 
     await db.insert(users).values({
@@ -68,9 +87,15 @@ export async function POST(req: NextRequest) {
       deletedAt: null,
     });
 
-    return NextResponse.json({ message: "✅ User created in DB" }, { status: 201 });
+    return NextResponse.json(
+      { message: "✅ User created in DB" },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("❌ Webhook Error:", error);
-    return NextResponse.json({ error: "Webhook verification or insert failed" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Webhook verification or insert failed" },
+      { status: 400 }
+    );
   }
 }
