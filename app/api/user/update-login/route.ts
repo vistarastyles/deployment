@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { db } from "@/db";
 
-export async function POST(_req: NextRequest) {
-  const { userId, redirectToSignIn } = await auth();
-  if (!userId) return redirectToSignIn();
+export async function POST(req: NextRequest) {
+  const { userId } = getAuth(req);
+  if (!userId)
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   try {
     await db
