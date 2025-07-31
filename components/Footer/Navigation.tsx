@@ -1,4 +1,3 @@
-import React from "react";
 import { navigationLinks, Link } from "@/components/Shared";
 
 export default function Navigation() {

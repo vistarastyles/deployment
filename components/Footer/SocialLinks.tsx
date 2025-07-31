@@ -1,4 +1,3 @@
-import React from "react";
 import { socialLinks, Link } from "../Shared";
 
 export default function SocialLinks() {

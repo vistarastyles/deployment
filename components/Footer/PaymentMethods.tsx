@@ -1,4 +1,3 @@
-import React from "react";
 import { Image, paymentMethods } from "../Shared";
 
 export default function PaymentMethods() {

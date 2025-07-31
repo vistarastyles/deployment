@@ -10,7 +10,6 @@ import {
   Instagram,
   Facebook,
   Twitter,
-  Linkedin,
   Truck,
   RotateCcw,
   Package,
@@ -24,6 +23,9 @@ import {
   ShoppingBag,
   Heart,
   Youtube,
+  Minus,
+  Plus,
+  ArrowLeft,
 } from "lucide-react";
 import logo from "@/public/logo.png";
 import upi from "@/public/upi-logo.webp";
@@ -59,6 +61,9 @@ export const Icons = {
   UPI: upi,
   Visa: visa,
   MasterCard: mastercard,
+  Minus,
+  Plus,
+  ArrowLeft,
 };
 
 export type IconName = keyof typeof Icons;

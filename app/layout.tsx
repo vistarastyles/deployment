@@ -4,6 +4,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Inter, Unbounded } from "next/font/google";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
+import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/components/Cart/CartContext";
 
 export const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const unbounded = Unbounded({
@@ -27,9 +29,17 @@ export default function RootLayout({
         <body
           className={`${inter.variable} ${unbounded.variable} bg-black font-sans`}
         >
-          <Navbar />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            <Toaster
+              position="top-right"
+              closeButton
+              duration={3000}
+              containerAriaLabel="Toaster"
+            />
+          </CartProvider>
         </body>
       </html>
     </ClerkProvider>

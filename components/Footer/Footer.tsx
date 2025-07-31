@@ -1,7 +1,6 @@
 import React from "react";
 import SocialLinks from "./SocialLinks";
-import Image from "next/image";
-import { Icons, Link } from "@/components/Shared";
+import { Icons, Link, Image } from "@/components/Shared";
 import FooterBottom from "./FooterBottom";
 import Navigation from "./Navigation";
 import CustomerCare from "./CustomerCare";

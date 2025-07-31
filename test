@@ -1,0 +1,724 @@
+"use client";
+import React, { useState } from "react";
+import {
+  Heart,
+  Star,
+  ShoppingCart,
+  Filter,
+  Search,
+  Grid,
+  List,
+} from "lucide-react";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  colors: string[];
+  sizes: string[];
+  isNew?: boolean;
+  isSale?: boolean;
+}
+
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Classic Cotton Crew",
+    price: 29.99,
+    originalPrice: 39.99,
+    image: "https://picsum.photos/300/400?random=1",
+    rating: 4.8,
+    reviews: 124,
+    colors: ["black", "white", "gray", "navy"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+  {
+    id: 2,
+    name: "Premium V-Neck",
+    price: 34.99,
+    image: "https://picsum.photos/300/400?random=2",
+    rating: 4.6,
+    reviews: 89,
+    colors: ["black", "white", "charcoal"],
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: 3,
+    name: "Vintage Graphic Tee",
+    price: 24.99,
+    originalPrice: 32.99,
+    image: "https://picsum.photos/300/400?random=3",
+    rating: 4.7,
+    reviews: 156,
+    colors: ["black", "vintage-white", "gray"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+  {
+    id: 4,
+    name: "Athletic Performance",
+    price: 39.99,
+    image: "https://picsum.photos/300/400?random=4",
+    rating: 4.9,
+    reviews: 203,
+    colors: ["black", "navy", "gray", "white"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+  },
+  {
+    id: 5,
+    name: "Slim Fit Essential",
+    price: 27.99,
+    image: "https://picsum.photos/300/400?random=5",
+    rating: 4.5,
+    reviews: 67,
+    colors: ["black", "white", "navy"],
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: 6,
+    name: "Oversized Streetwear",
+    price: 44.99,
+    originalPrice: 54.99,
+    image: "https://picsum.photos/300/400?random=6",
+    rating: 4.8,
+    reviews: 91,
+    colors: ["black", "charcoal", "olive"],
+    sizes: ["M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+  {
+    id: 7,
+    name: "Minimalist Pocket Tee",
+    price: 31.99,
+    image: "https://picsum.photos/300/400?random=7",
+    rating: 4.4,
+    reviews: 76,
+    colors: ["black", "white", "gray"],
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: 8,
+    name: "Henley Long Sleeve",
+    price: 42.99,
+    originalPrice: 49.99,
+    image: "https://picsum.photos/300/400?random=8",
+    rating: 4.7,
+    reviews: 134,
+    colors: ["black", "navy", "charcoal"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+  {
+    id: 9,
+    name: "Retro Band Tee",
+    price: 26.99,
+    image: "https://picsum.photos/300/400?random=9",
+    rating: 4.6,
+    reviews: 98,
+    colors: ["black", "vintage-white"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+  },
+  {
+    id: 10,
+    name: "Tech Fabric Crew",
+    price: 49.99,
+    image: "https://picsum.photos/300/400?random=10",
+    rating: 4.8,
+    reviews: 167,
+    colors: ["black", "gray", "navy"],
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: 11,
+    name: "Distressed Vintage",
+    price: 36.99,
+    originalPrice: 44.99,
+    image: "https://picsum.photos/300/400?random=11",
+    rating: 4.5,
+    reviews: 89,
+    colors: ["black", "charcoal", "olive"],
+    sizes: ["M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+  {
+    id: 12,
+    name: "Polo Style Tee",
+    price: 38.99,
+    image: "https://picsum.photos/300/400?random=12",
+    rating: 4.7,
+    reviews: 112,
+    colors: ["black", "white", "navy", "gray"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+  },
+  {
+    id: 13,
+    name: "Urban Streetwear",
+    price: 33.99,
+    image: "https://picsum.photos/300/400?random=13",
+    rating: 4.6,
+    reviews: 145,
+    colors: ["black", "charcoal"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isNew: true,
+  },
+  {
+    id: 14,
+    name: "Muscle Fit Tank",
+    price: 22.99,
+    originalPrice: 28.99,
+    image: "https://picsum.photos/300/400?random=14",
+    rating: 4.4,
+    reviews: 78,
+    colors: ["black", "white", "gray"],
+    sizes: ["S", "M", "L", "XL"],
+    isSale: true,
+  },
+  {
+    id: 15,
+    name: "Designer Logo Tee",
+    price: 54.99,
+    image: "https://picsum.photos/300/400?random=15",
+    rating: 4.9,
+    reviews: 223,
+    colors: ["black", "white"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+  },
+  {
+    id: 16,
+    name: "Eco-Friendly Organic",
+    price: 41.99,
+    image: "https://picsum.photos/300/400?random=16",
+    rating: 4.8,
+    reviews: 156,
+    colors: ["black", "navy", "olive"],
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: 17,
+    name: "Thermal Base Layer",
+    price: 35.99,
+    originalPrice: 42.99,
+    image: "https://picsum.photos/300/400?random=17",
+    rating: 4.7,
+    reviews: 134,
+    colors: ["black", "charcoal", "navy"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+  {
+    id: 18,
+    name: "Graphic Print Crew",
+    price: 28.99,
+    image: "https://picsum.photos/300/400?random=18",
+    rating: 4.5,
+    reviews: 92,
+    colors: ["black", "white", "gray"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+  },
+  {
+    id: 19,
+    name: "Premium Bamboo Tee",
+    price: 46.99,
+    image: "https://picsum.photos/300/400?random=19",
+    rating: 4.9,
+    reviews: 187,
+    colors: ["black", "white", "charcoal"],
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: 20,
+    name: "Relaxed Fit Casual",
+    price: 24.99,
+    originalPrice: 31.99,
+    image: "https://picsum.photos/300/400?random=20",
+    rating: 4.3,
+    reviews: 67,
+    colors: ["black", "gray", "navy"],
+    sizes: ["M", "L", "XL", "XXL"],
+    isSale: true,
+  },
+];
+
+const MensTShirtShop: React.FC = () => {
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [priceRange, setPriceRange] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("featured");
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const PRODUCTS_PER_PAGE = 15;
+
+  const toggleFavorite = (productId: number) => {
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(productId)) {
+      newFavorites.delete(productId);
+    } else {
+      newFavorites.add(productId);
+    }
+    setFavorites(newFavorites);
+  };
+
+  const filteredProducts = products.filter((product) => {
+    if (selectedSize && !product.sizes.includes(selectedSize)) return false;
+    if (selectedColor && !product.colors.includes(selectedColor)) return false;
+    if (priceRange) {
+      const [min, max] = priceRange.split("-").map(Number);
+      if (product.price < min || product.price > max) return false;
+    }
+    return true;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case "price-low":
+        return a.price - b.price;
+      case "price-high":
+        return b.price - a.price;
+      case "rating":
+        return b.rating - a.rating;
+      case "newest":
+        return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
+      default:
+        return 0;
+    }
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const currentProducts = sortedProducts.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Previous button
+    if (currentPage > 1) {
+      pages.push(
+        <button
+          key="prev"
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="px-3 py-2 rounded border border-gray-600 text-gray-300 hover:border-white hover:text-white transition-colors"
+        >
+          ‹
+        </button>
+      );
+    }
+
+    // First page
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className="px-3 py-2 rounded border border-gray-600 text-gray-300 hover:border-white hover:text-white transition-colors"
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        pages.push(
+          <span key="ellipsis1" className="px-3 py-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-2 rounded border transition-colors ${
+            i === currentPage
+              ? "bg-white text-black border-white"
+              : "border-gray-600 text-gray-300 hover:border-white hover:text-white"
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(
+          <span key="ellipsis2" className="px-3 py-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className="px-3 py-2 rounded border border-gray-600 text-gray-300 hover:border-white hover:text-white transition-colors"
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    // Next button
+    if (currentPage < totalPages) {
+      pages.push(
+        <button
+          key="next"
+          onClick={() => handlePageChange(currentPage + 1)}
+          className="px-3 py-2 rounded border border-gray-600 text-gray-300 hover:border-white hover:text-white transition-colors"
+        >
+          ›
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-8">
+        {pages}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header className="border-b border-gray-800 bg-black/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              Shop
+            </h1>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search t-shirts..."
+                  className="bg-gray-900 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20"
+                />
+              </div>
+              <div className="flex items-center space-x-2 bg-gray-900 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded ${
+                    viewMode === "grid"
+                      ? "bg-white text-black"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded ${
+                    viewMode === "list"
+                      ? "bg-white text-black"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters Sidebar */}
+          <aside className="lg:w-64 space-y-6">
+            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+              <div className="flex items-center space-x-2 mb-4">
+                <Filter className="w-5 h-5" />
+                <h2 className="text-lg font-semibold">Filters</h2>
+              </div>
+
+              {/* Size Filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3">Size</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["S", "M", "L", "XL", "XXL"].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() =>
+                        setSelectedSize(selectedSize === size ? "" : size)
+                      }
+                      className={`px-3 py-1 rounded border transition-all ${
+                        selectedSize === size
+                          ? "bg-white text-black border-white"
+                          : "border-gray-600 hover:border-gray-400"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3">Color</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["black", "white", "gray", "navy", "charcoal"].map(
+                    (color) => (
+                      <button
+                        key={color}
+                        onClick={() =>
+                          setSelectedColor(selectedColor === color ? "" : color)
+                        }
+                        className={`px-3 py-1 rounded border text-sm transition-all capitalize ${
+                          selectedColor === color
+                            ? "bg-white text-black border-white"
+                            : "border-gray-600 hover:border-gray-400"
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Price Filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3">Price Range</h3>
+                <select
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white"
+                >
+                  <option value="">All Prices</option>
+                  <option value="0-30">Under $30</option>
+                  <option value="30-40">$30 - $40</option>
+                  <option value="40-50">$40 - $50</option>
+                  <option value="50-100">$50+</option>
+                </select>
+              </div>
+
+              {/* Clear Filters */}
+              <button
+                onClick={() => {
+                  setSelectedSize("");
+                  setSelectedColor("");
+                  setPriceRange("");
+                  setCurrentPage(1);
+                }}
+                className="w-full py-2 text-center text-gray-400 hover:text-white border border-gray-600 rounded hover:border-gray-400 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </aside>
+
+          {/* Products Section */}
+          <main className="flex-1">
+            {/* Sort and Results Info */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <p className="text-gray-400">
+                  Showing {startIndex + 1}-
+                  {Math.min(endIndex, sortedProducts.length)} of{" "}
+                  {sortedProducts.length} products
+                </p>
+                {totalPages > 1 && (
+                  <p className="text-gray-500 text-sm">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                )}
+              </div>
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+              >
+                <option value="featured">Featured</option>
+                <option value="newest">Newest</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+              </select>
+            </div>
+
+            {/* Products Grid */}
+            <div
+              className={`grid gap-6 ${
+                viewMode === "grid"
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                  : "grid-cols-1"
+              }`}
+            >
+              {currentProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className={`group bg-gray-900/30 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-800 hover:border-gray-600 transition-all duration-300 hover:scale-105 ${
+                    viewMode === "list" ? "flex" : ""
+                  }`}
+                >
+                  <div
+                    className={`relative ${viewMode === "list" ? "w-48" : ""}`}
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className={`w-full object-cover bg-gray-800 ${
+                        viewMode === "list" ? "h-48" : "h-64"
+                      }`}
+                    />
+
+                    {/* Badges */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-1">
+                      {product.isNew && (
+                        <span className="bg-green-500 text-black px-2 py-1 rounded text-xs font-bold">
+                          NEW
+                        </span>
+                      )}
+                      {product.isSale && (
+                        <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                          SALE
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Favorite Button */}
+                    <button
+                      onClick={() => toggleFavorite(product.id)}
+                      className="absolute top-3 right-3 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-gray-600 hover:bg-black/70 transition-all"
+                    >
+                      <Heart
+                        className={`w-4 h-4 ${
+                          favorites.has(product.id)
+                            ? "fill-red-500 text-red-500"
+                            : "text-white"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className={`p-5 ${viewMode === "list" ? "flex-1" : ""}`}>
+                    <h3 className="font-semibold text-lg mb-2 group-hover:text-gray-300 transition-colors">
+                      {product.name}
+                    </h3>
+
+                    {/* Rating */}
+                    <div className="flex items-center space-x-1 mb-3">
+                      <div className="flex space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(product.rating)
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-600"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-400">
+                        {product.rating} ({product.reviews})
+                      </span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-center space-x-2 mb-4">
+                      <span className="text-xl font-bold">
+                        ${product.price}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-gray-500 line-through">
+                          ${product.originalPrice}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Colors */}
+                    <div className="flex space-x-2 mb-4">
+                      {product.colors.slice(0, 4).map((color, index) => (
+                        <div
+                          key={index}
+                          className={`w-6 h-6 rounded-full border-2 border-gray-600 ${
+                            color === "black"
+                              ? "bg-black"
+                              : color === "white"
+                              ? "bg-white"
+                              : color === "gray"
+                              ? "bg-gray-500"
+                              : color === "navy"
+                              ? "bg-blue-900"
+                              : color === "charcoal"
+                              ? "bg-gray-700"
+                              : "bg-gray-400"
+                          }`}
+                        />
+                      ))}
+                      {product.colors.length > 4 && (
+                        <span className="text-xs text-gray-400 flex items-center">
+                          +{product.colors.length - 4}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <button className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2 group-hover:scale-105 transform">
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Add to Cart</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {currentProducts.length === 0 && (
+              <div className="text-center py-12 col-span-full">
+                <p className="text-gray-400 text-lg">
+                  No products match your filters.
+                </p>
+                <p className="text-gray-500 mt-2">
+                  Try adjusting your search criteria.
+                </p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {renderPagination()}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MensTShirtShop;

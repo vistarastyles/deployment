@@ -1,9 +1,9 @@
-import React from 'react'
+import CartClient from "@/components/Cart/CartClient";
 
-export default function page() {
+export default function CartPage() {
   return (
-    <div>
-      
+    <div className="px-6 py-12">
+      <CartClient />
     </div>
-  )
+  );
 }

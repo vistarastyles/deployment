@@ -1,4 +1,3 @@
-import React from "react";
 import { menuItems } from "./MenuItems";
 import { Link } from "@/components/Shared";
 import { cn } from "@/lib/utils";

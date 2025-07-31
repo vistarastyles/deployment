@@ -1,14 +1,15 @@
 "use client";
-
 import React, { useState } from "react";
 import PcMenu from "./PcMenu";
 import Logo from "./Logo";
 import CartAccountIcons from "./CartAccountIcons";
-import MobileMenu from "./MobileMenu"; // ✅ imported mobile menu
+import MobileMenu from "./MobileMenu";
 import { Icons } from "@/components/Shared";
+import { useCart } from "@/components/Cart/CartContext";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { cartCount } = useCart();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -25,11 +26,14 @@ const Navbar = () => {
           <PcMenu />
 
           {/* Desktop Cart and Account Icons */}
-          <CartAccountIcons className="hidden md:flex" cartCount={3} />
+          <CartAccountIcons className="hidden md:flex" cartCount={cartCount} />
 
           {/* Mobile Controls */}
           <div className="md:hidden flex items-center space-x-4">
-            <CartAccountIcons className="flex md:hidden" cartCount={3} />
+            <CartAccountIcons
+              className="flex md:hidden"
+              cartCount={cartCount}
+            />
             <button
               onClick={toggleMobileMenu}
               className="p-2 rounded-md text-white cursor-pointer focus:outline-none"
