@@ -1,5 +1,4 @@
-import { Link, Image } from "@/components/Shared";
-import { Icons } from "@/components/Shared";
+import { Link, Image, Icons } from "@/components/Shared";
 export default function Logo() {
   return (
     <Link href="/">

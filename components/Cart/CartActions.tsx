@@ -1,10 +1,8 @@
 "use client";
-
 import { useTransition } from "react";
-import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Icons } from "@/components/Shared";
 
 interface CartActionsProps {
   item: CartItemWithProduct;
@@ -31,7 +29,7 @@ export default function CartActions({ item }: CartActionsProps) {
 
         router.refresh();
       } catch (err) {
-        toast.error("Failed to update quantity");
+        alert(`${err}, "Failed to update quantity"`);
       }
     });
   };
@@ -44,7 +42,7 @@ export default function CartActions({ item }: CartActionsProps) {
         onClick={() => updateQuantity(item.quantity - 1)}
         disabled={isPending || item.quantity === 1}
       >
-        <Minus className="w-4 h-4" />
+        <Icons.Minus className="w-4 h-4" />
       </Button>
       <span className="w-6 text-center">{item.quantity}</span>
       <Button
@@ -53,7 +51,7 @@ export default function CartActions({ item }: CartActionsProps) {
         onClick={() => updateQuantity(item.quantity + 1)}
         disabled={isPending}
       >
-        <Plus className="w-4 h-4" />
+        <Icons.Plus className="w-4 h-4" />
       </Button>
     </div>
   );

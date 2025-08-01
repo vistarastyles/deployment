@@ -1,9 +1,7 @@
 "use client";
-
 import { useEffect, useState, useCallback } from "react";
-import { Image, Link } from "@/components/Shared";
+import { Image, Icons, Link } from "@/components/Shared";
 import { useCart } from "@/components/Cart/CartContext";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 
 interface CartItemWithProduct {
   id: string;
@@ -16,20 +14,45 @@ interface CartItemWithProduct {
   quantity: number;
 }
 
+interface RazorpaySuccessResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  order_id: string;
+  name: string;
+  description: string;
+  handler: (response: RazorpaySuccessResponse) => void;
+  prefill: { name: string; email?: string; contact?: string };
+  theme?: { color: string };
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (opts: RazorpayOptions) => { open: () => void };
+  }
+}
+
 export default function CartClient() {
   const { refreshCartCount } = useCart();
   const [items, setItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const fetchCart = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/cart/get?ts=${Date.now()}`);
-      const data = await res.json();
+      const data: CartItemWithProduct[] = await res.json();
       setItems(data);
       await refreshCartCount();
-    } catch (error) {
-      console.error(error, "Failed to load cart");
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -48,38 +71,78 @@ export default function CartClient() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itemId, action }),
     });
-
-    if (!res.ok) {
-      console.error("Failed to update item");
-      return;
-    }
-
-    setItems((prevItems) => {
-      if (action === "delete") {
-        return prevItems.filter((item) => item.id !== itemId);
-      }
-
-      return prevItems.map((item) => {
-        if (item.id !== itemId) return item;
-
-        const updatedQty =
-          action === "increment"
-            ? item.quantity + 1
-            : Math.max(1, item.quantity - 1);
-
-        return { ...item, quantity: updatedQty };
-      });
-    });
-
+    if (!res.ok) return;
+    setItems((prev) =>
+      prev
+        .filter((i) => (action === "delete" ? i.id !== itemId : true))
+        .map((i) =>
+          i.id !== itemId || action === "delete"
+            ? i
+            : {
+                ...i,
+                quantity:
+                  action === "increment"
+                    ? i.quantity + 1
+                    : Math.max(1, i.quantity - 1),
+              }
+        )
+    );
     await refreshCartCount();
   };
 
   const totalAmount = items.reduce(
-    (acc, item) => acc + (item.productSalePrice || 0) * item.quantity,
+    (s, i) => s + i.productSalePrice * i.quantity,
     0
   );
+  const totalItems = items.reduce((s, i) => s + i.quantity, 0);
 
-  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+  const loadRazorpayScript = () =>
+    new Promise<void>((resolve, reject) => {
+      if (window.Razorpay) return resolve();
+      const s = document.createElement("script");
+      s.src = "https://checkout.razorpay.com/v1/checkout.js";
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error("Razorpay load failed"));
+      document.body.appendChild(s);
+    });
+
+  const handleCheckout = async () => {
+    if (!items.length) return alert("Cart is empty");
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch("/api/razorpay/create-order", {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to create Razorpay order");
+      const { orderId, amount, currency } = await res.json();
+
+      await loadRazorpayScript();
+
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
+        amount,
+        currency,
+        order_id: orderId,
+        name: "Vistara Styles",
+        description: `Order of ${totalItems} items`,
+        handler: (resp) =>
+          (window.location.href = `/account/order-confirmation?paymentId=${resp.razorpay_payment_id}`),
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+        theme: { color: "#F59E0B" },
+      };
+
+      new window.Razorpay(options).open();
+    } catch (e) {
+      console.error(e);
+      alert("Unable to initiate payment.");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -111,7 +174,7 @@ export default function CartClient() {
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="text-center space-y-6">
             <div className="w-24 h-24 mx-auto bg-slate-800 rounded-full flex items-center justify-center">
-              <ShoppingBag className="w-12 h-12 text-slate-400" />
+              <Icons.ShoppingBag className="w-12 h-12 text-slate-400" />
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-white">
@@ -126,7 +189,7 @@ export default function CartClient() {
               href={"/shop"}
               className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 rounded-xl font-semibold transition-colors"
             >
-              <ShoppingBag className="w-5 h-5" />
+              <Icons.ShoppingBag className="w-5 h-5" />
               Continue Shopping
             </Link>
           </div>
@@ -182,7 +245,7 @@ export default function CartClient() {
                         className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                         title="Remove item"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Icons.Trash2 className="w-5 h-5" />
                       </button>
                     </div>
 
@@ -223,7 +286,7 @@ export default function CartClient() {
                           disabled={item.quantity <= 1}
                           className="p-2 text-white hover:bg-slate-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Icons.Minus className="w-4 h-4" />
                         </button>
                         <span className="text-white font-semibold min-w-[2rem] text-center">
                           {item.quantity}
@@ -232,7 +295,7 @@ export default function CartClient() {
                           onClick={() => updateQuantity(item.id, "increment")}
                           className="p-2 text-white hover:bg-slate-600 rounded-lg transition-colors"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Icons.Plus className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -270,12 +333,23 @@ export default function CartClient() {
               </div>
 
               <div className="space-y-3 w-full flex flex-col">
-                <Link
+                {/* <Link
                   href={"/checkout"}
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-xl font-semibold transition-colors text-center"
                 >
                   Proceed to Checkout
-                </Link>
+                </Link> */}
+                <button
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                  className={`w-full ${
+                    checkoutLoading
+                      ? "bg-yellow-300"
+                      : "bg-yellow-500 hover:bg-yellow-600"
+                  } text-white py-4 rounded-xl font-semibold transition-colors`}
+                >
+                  {checkoutLoading ? "Processing…" : "Proceed to Checkout"}
+                </button>
                 <Link
                   href={"/shop"}
                   className="w-full border border-slate-600 text-slate-300 hover:bg-slate-700/50 py-3 rounded-xl font-medium transition-colors text-center"

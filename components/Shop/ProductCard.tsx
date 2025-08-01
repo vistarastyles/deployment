@@ -1,8 +1,7 @@
 "use client";
-import Image from "next/image";
 import React, { useState } from "react";
-import { AddToCartButton } from "../AddToCartButton";
-import { Link } from "@/components/Shared";
+import { AddToCartButton } from "@/components/AddToCartButton";
+import { Link, Image } from "@/components/Shared";
 import Discount from "./Discount";
 
 interface ProductCardProps {

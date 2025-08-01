@@ -164,7 +164,6 @@ export const cartItems = pgTable(
       precision: 10,
       scale: 2,
     }).notNull(),
-    // New fields for product details and user selection
     productTitle: varchar("product_title", { length: 255 }),
     productSalePrice: numeric("product_sale_price", {
       precision: 10,
@@ -190,3 +189,60 @@ export const cartItems = pgTable(
     ),
   })
 );
+
+// ========== Orders ==========
+export const orders = pgTable("orders", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  razorpayOrderId: varchar("razorpay_order_id", { length: 255 }),
+  paymentId: varchar("payment_id", { length: 255 }),
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
+  paymentStatus: varchar("payment_status", { length: 50 }).notNull(),
+  amount: numeric("amount").notNull(),
+  shippingAddress: jsonb("shipping_address").$type<Record<
+    string,
+    any
+  > | null>(),
+  items: jsonb("items")
+    .$type<
+      {
+        productId: string;
+        title: string;
+        price: number;
+        quantity: number;
+        selectedSize: string;
+        selectedColor: string;
+      }[]
+    >()
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// ========== Addresses ==========
+export const addresses = pgTable("addresses", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+
+  addressLine1: text("address_line1").notNull(),
+  addressLine2: text("address_line2"),
+  landmark: text("landmark"),
+  city: varchar("city", { length: 100 }).notNull(),
+  state: varchar("state", { length: 100 }).notNull(),
+  country: varchar("country", { length: 100 }).notNull(),
+  pincode: varchar("pincode", { length: 20 }).notNull(),
+  addressType: varchar("address_type", { length: 50 }), // e.g. home, office
+
+  createdAt: timestamp("created_at")
+    .default(sql`now()`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`now()`)
+    .notNull(),
+});

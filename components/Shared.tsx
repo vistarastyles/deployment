@@ -26,6 +26,7 @@ import {
   Minus,
   Plus,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
 import logo from "@/public/logo.png";
 import upi from "@/public/upi-logo.webp";
@@ -64,6 +65,7 @@ export const Icons = {
   Minus,
   Plus,
   ArrowLeft,
+  Trash2,
 };
 
 export type IconName = keyof typeof Icons;

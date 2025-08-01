@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { Icons, Link } from "../Shared";
+import { Icons, Link } from "@/components/Shared";
 import { useAuth, UserButton } from "@clerk/nextjs";
 
 interface Props {

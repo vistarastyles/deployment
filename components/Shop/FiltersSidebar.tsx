@@ -1,4 +1,3 @@
-// components/Shop/FiltersSidebar.tsx
 "use client";
 import React from "react";
 

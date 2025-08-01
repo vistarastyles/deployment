@@ -1,4 +1,4 @@
-import { Icons } from "../Shared";
+import { Icons } from "@/components/Shared";
 
 export const menuItems = [
   { name: "Home", href: "/", icon: Icons.Home },

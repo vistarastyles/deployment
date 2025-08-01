@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { menuItems } from "./MenuItems";
 import { Link } from "@/components/Shared";

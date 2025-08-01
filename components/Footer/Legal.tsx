@@ -1,4 +1,4 @@
-import { legalLinks, Link } from "../Shared";
+import { legalLinks, Link } from "@/components/Shared";
 
 export default function Legal() {
   return (

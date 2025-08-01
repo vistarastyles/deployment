@@ -1,4 +1,4 @@
-import { Image, paymentMethods } from "../Shared";
+import { Image, paymentMethods } from "@/components/Shared";
 
 export default function PaymentMethods() {
   return (

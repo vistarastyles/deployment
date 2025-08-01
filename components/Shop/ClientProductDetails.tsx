@@ -1,6 +1,6 @@
 "use client";
 import { AddToCartButton } from "@/components/AddToCartButton";
-import Image from "next/image";
+import { Image } from "@/components/Shared";
 import React, { useState } from "react";
 import Discount from "./Discount";
 
@@ -88,16 +88,24 @@ const ClientProductDetails: React.FC<ClientProductDetailsProps> = ({
 
           <div className="flex gap-2 flex-wrap mb-2">
             {product.isNew && (
-              <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">New</span>
+              <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                New
+              </span>
             )}
             {product.isBestSeller && (
-              <span className="bg-yellow-500 text-black text-xs px-3 py-1 rounded-full font-semibold">Best Seller</span>
+              <span className="bg-yellow-500 text-black text-xs px-3 py-1 rounded-full font-semibold">
+                Best Seller
+              </span>
             )}
             {product.isOnSale && (
-              <span className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-semibold">Sale</span>
+              <span className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                Sale
+              </span>
             )}
             {product.isFeatured && (
-              <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold">Featured</span>
+              <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                Featured
+              </span>
             )}
           </div>
 
@@ -117,7 +125,9 @@ const ClientProductDetails: React.FC<ClientProductDetailsProps> = ({
           </div>
         </div>
 
-        <p className="text-zinc-300 text-lg leading-relaxed mb-4">{product.description}</p>
+        <p className="text-zinc-300 text-lg leading-relaxed mb-4">
+          {product.description}
+        </p>
 
         {/* Sizes */}
         <div>

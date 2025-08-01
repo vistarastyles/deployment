@@ -164,6 +164,17 @@ declare global {
     updatedAt?: Date;
   }
 
+  interface ShippingAddress {
+    firstName: string;
+    lastName?: string;
+    phone: string;
+    email?: string;
+    city: string;
+    zip: string;
+    province?: string;
+    country_code: string;
+  }
+
   // ===================== Props =====================
   interface MensTShirtShopProps {
     products: (Product & {

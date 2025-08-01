@@ -1,5 +1,5 @@
 import React from "react";
-import { accountLinks, Link } from "../Shared";
+import { accountLinks, Link } from "@/components/Shared";
 
 export default function AccountLinks() {
   return (

@@ -1,4 +1,4 @@
-import { socialLinks, Link } from "../Shared";
+import { socialLinks, Link } from "@/components/Shared";
 
 export default function SocialLinks() {
   return (
