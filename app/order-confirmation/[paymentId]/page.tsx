@@ -1,4 +1,4 @@
-// File: /app/account/order-confirmation/[paymentId]/page.tsx
+// File: /app/order-confirmation/[paymentId]/page.tsx
 
 import { notFound } from "next/navigation";
 import {
@@ -7,20 +7,12 @@ import {
   Truck,
   ArrowRight,
   Download,
-  Share2,
 } from "lucide-react";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
 
-interface Props {
-  params: {
-    paymentId: string;
-  };
-}
-
-// JSON column type for order items
 type OrderItem = {
   productId: string;
   title: string;
@@ -30,8 +22,11 @@ type OrderItem = {
   selectedColor: string;
 };
 
-export default async function OrderConfirmation({ params }: Props) {
-  const { paymentId } = await Promise.resolve(params);
+interface Props {
+  params: { paymentId: string };
+}
+export default async function Page({ params }: Props) {
+  const { paymentId } = params;
 
   if (!paymentId) return notFound();
 
@@ -331,9 +326,9 @@ export default async function OrderConfirmation({ params }: Props) {
               Our customer support team is here to help
             </p>
             <div className="flex items-center justify-center gap-4 text-sm">
-              <span className="text-blue-400">support@yourstore.com</span>
+              <span className="text-blue-400">contactus@vistarastyles.com</span>
               <span className="text-slate-500">•</span>
-              <span className="text-blue-400">+91 98765 43210</span>
+              <span className="text-blue-400">+91 76239 69483</span>
             </div>
           </div>
         </div>

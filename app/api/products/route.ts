@@ -3,11 +3,6 @@ import { db } from "@/db";
 import { products, productImages, collections } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
-// Ensure this interface is declared in global.d.ts
-// interface ProductWithImages extends Product {
-//   images: ProductImage[];
-// }
-
 export async function GET() {
   try {
     const productList = await db
@@ -18,23 +13,26 @@ export async function GET() {
       .where(eq(products.isActive, true))
       .orderBy(desc(products.createdAt));
 
-    const grouped = productList.reduce((acc, row) => {
-      const product = row.products;
-      const image = row.product_images;
+    const grouped = productList.reduce(
+      (acc, row) => {
+        const product = row.products;
+        const image = row.product_images;
 
-      if (!acc[product.id]) {
-        acc[product.id] = {
-          ...product,
-          basePrice: Number(product.basePrice),
-          salePrice: Number(product.salePrice),
-          images: [],
-        } as ProductWithImages;
-      }
+        if (!acc[product.id]) {
+          acc[product.id] = {
+            ...product,
+            basePrice: Number(product.basePrice),
+            salePrice: Number(product.salePrice),
+            images: [],
+          } as ProductWithImages;
+        }
 
-      if (image) acc[product.id].images.push(image);
+        if (image) acc[product.id].images.push(image);
 
-      return acc;
-    }, {} as Record<string, ProductWithImages>);
+        return acc;
+      },
+      {} as Record<string, ProductWithImages>
+    );
 
     const result: ProductWithImages[] = Object.values(grouped);
 

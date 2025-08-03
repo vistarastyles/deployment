@@ -1,4 +1,3 @@
-// /app/api/home-carousel/route.ts
 import { db } from "@/db";
 import { homeCarousel } from "@/db/schema";
 import { eq } from "drizzle-orm";

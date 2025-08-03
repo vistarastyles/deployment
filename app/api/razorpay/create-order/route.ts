@@ -1,4 +1,3 @@
-// /app/api/razorpay/create-order/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { db } from "@/db";
@@ -78,7 +77,7 @@ export async function POST(req: NextRequest) {
     razorpayOrderId: rpOrder.id,
     paymentMethod: "razorpay",
     paymentStatus: "pending",
-    amount: totalAmount,
+    amount: totalAmount.toString(),
     items: [],
   });
 

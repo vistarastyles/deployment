@@ -1,3 +1,4 @@
+// app/shop/product/[slug]/page.tsx
 import { db } from "@/db";
 import { products, productImages } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -8,9 +9,8 @@ import ClientProductDetails from "@/components/Shop/ClientProductDetails";
 interface Props {
   params: { slug: string };
 }
-
 export default async function ProductPage({ params }: Props) {
-  const slug = params.slug;
+  const { slug } = params;
 
   const [rawProduct] = await db
     .select()

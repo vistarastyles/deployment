@@ -1,4 +1,4 @@
-// /app/api/razorpay/webhook/route.ts
+// app/api/razorpay/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { orders, carts, cartItems } from "@/db/schema";
@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
-  // 2) Extract payment and user/cart info
   const payment = payload.payload.payment.entity;
   const userId = payment.notes.userId as string;
   const razorpayOrderId = payment.order_id as string;
@@ -45,7 +44,6 @@ export async function POST(req: NextRequest) {
     ? await db.select().from(cartItems).where(eq(cartItems.cartId, cart.id))
     : [];
 
-  // 3) Update the order record
   await db
     .update(orders)
     .set({
@@ -65,7 +63,6 @@ export async function POST(req: NextRequest) {
     })
     .where(eq(orders.razorpayOrderId, razorpayOrderId));
 
-  // 4) Deactivate cart
   if (cart) {
     await db
       .update(carts)
@@ -73,7 +70,6 @@ export async function POST(req: NextRequest) {
       .where(eq(carts.id, cart.id));
   }
 
-  // 5) Fetch Clerk user
   const { users } = await clerkClient();
   const clerkUser = await users.getUser(userId);
   const userName = clerkUser.firstName ?? "Customer";
@@ -83,7 +79,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No email for user" }, { status: 500 });
   }
 
-  // 6) Re-fetch the updated order (including its DB id)
   const [order] = await db
     .select({
       id: orders.id,
@@ -97,7 +92,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  // 7) Generate PDF invoice
   const invoiceOrder = {
     id: order.id,
     user: { name: userName },
@@ -105,21 +99,18 @@ export async function POST(req: NextRequest) {
   };
   const pdfBuffer = await generateInvoicePdf(invoiceOrder);
 
-  // 8) Upload PDF to Supabase storage
   const publicUrl = await uploadInvoice(order.id, pdfBuffer);
   console.log("✅ Invoice uploaded to:", publicUrl);
 
-  // 9) Persist the public URL on the order
   await db
     .update(orders)
     .set({ invoiceUrl: publicUrl })
     .where(eq(orders.id, order.id));
 
-  // 10) Email the customer
   await sendInvoiceEmail({
     to: userEmail,
     name: userName,
-    invoiceUrl: publicUrl, // include the download link in the email
+    invoiceUrl: publicUrl,
   });
   console.log("📧 Invoice email sent to:", userEmail);
 

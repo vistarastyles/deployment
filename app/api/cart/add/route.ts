@@ -1,4 +1,3 @@
-// /app/api/cart/add/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { carts, cartItems, products } from "@/db/schema";

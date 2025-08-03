@@ -1,39 +1,33 @@
-// File: /app/api/invoice/[paymentId]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+// app/api/invoice/[paymentId]/route.ts
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateInvoicePdf } from "@/lib/generateInvoice";
 import { uploadInvoice } from "@/lib/uploadInvoiceToSupabase";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { paymentId: string } }
-) {
-  const paymentId = params.paymentId;
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const segments = url.pathname.split("/");
+  const paymentId = segments[segments.length - 1];
 
-  // 1) Fetch the order (including any previously-stored invoiceUrl)
   const [order] = await db
     .select({ id: orders.id, invoiceUrl: orders.invoiceUrl })
     .from(orders)
     .where(eq(orders.paymentId, paymentId));
 
   if (!order) {
-    return new NextResponse("Order not found", { status: 404 });
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  // 2) If we already have a public URL, redirect there immediately
   if (order.invoiceUrl) {
     return NextResponse.redirect(order.invoiceUrl, 307);
   }
 
-  // 3) Otherwise: generate, upload, save, then redirect
-
-  // 3a) Regenerate PDF
   const pdfBuffer = await generateInvoicePdf({
     id: order.id,
-    user: { name: "Customer" }, // or pull real name if you prefer
-    items: [], // you could fetch items here if needed
+    user: { name: "Customer" },
+    items: [],
   });
 
   // 3b) Upload to Supabase
