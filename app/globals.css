@@ -3,6 +3,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer utilities {
+  @keyframes fade {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    10%,
+    90% {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade {
+    animation: fade 10s ease-in-out infinite;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

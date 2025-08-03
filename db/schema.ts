@@ -117,7 +117,7 @@ export const productImages = pgTable(
     url: varchar("url", { length: 1024 }).notNull(),
     color: varchar("color", { length: 50 }).notNull(),
     alt: varchar("alt", { length: 255 }),
-    position: integer("position").default(0), // to control image order
+    position: integer("position").default(0),
   },
   (productImages) => ({
     productIdIdx: index("product_images_product_id_idx").on(
@@ -198,6 +198,7 @@ export const orders = pgTable("orders", {
   paymentId: varchar("payment_id", { length: 255 }),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
   paymentStatus: varchar("payment_status", { length: 50 }).notNull(),
+  invoiceUrl: varchar("invoice_url", { length: 1024 }),
   amount: numeric("amount").notNull(),
   shippingAddress: jsonb("shipping_address").$type<Record<
     string,
@@ -237,7 +238,7 @@ export const addresses = pgTable("addresses", {
   state: varchar("state", { length: 100 }).notNull(),
   country: varchar("country", { length: 100 }).notNull(),
   pincode: varchar("pincode", { length: 20 }).notNull(),
-  addressType: varchar("address_type", { length: 50 }), // e.g. home, office
+  addressType: varchar("address_type", { length: 50 }),
 
   createdAt: timestamp("created_at")
     .default(sql`now()`)
@@ -245,4 +246,26 @@ export const addresses = pgTable("addresses", {
   updatedAt: timestamp("updated_at")
     .default(sql`now()`)
     .notNull(),
+});
+
+// ========== Home Carousel ==========
+export const homeCarousel = pgTable("home_carousel", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  imageDesktop: varchar("image_desktop", { length: 2048 }).notNull(),
+  imageTablet: varchar("image_tablet", { length: 2048 }).notNull(),
+  imageMobile: varchar("image_mobile", { length: 2048 }).notNull(),
+  title: varchar("title", { length: 255 }),
+  subtitle: text("subtitle"),
+  ctaText: varchar("cta_text", { length: 255 }),
+  ctaUrl: varchar("cta_url", { length: 2048 }),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// ========== Newsletter Subscribers ==========
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  email: varchar("email", { length: 255 }).primaryKey(),
+  subscribedAt: timestamp("subscribed_at").defaultNow(),
 });

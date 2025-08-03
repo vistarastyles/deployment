@@ -3,9 +3,13 @@ import { db } from "@/db";
 import { products, productImages, collections } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
+// Ensure this interface is declared in global.d.ts
+// interface ProductWithImages extends Product {
+//   images: ProductImage[];
+// }
+
 export async function GET() {
   try {
-    // Query only products where isActive is true
     const productList = await db
       .select()
       .from(products)
@@ -17,22 +21,22 @@ export async function GET() {
     const grouped = productList.reduce((acc, row) => {
       const product = row.products;
       const image = row.product_images;
-      const collection = row.collections;
 
       if (!acc[product.id]) {
         acc[product.id] = {
           ...product,
+          basePrice: Number(product.basePrice),
+          salePrice: Number(product.salePrice),
           images: [],
-          collection,
-        };
+        } as ProductWithImages;
       }
 
       if (image) acc[product.id].images.push(image);
 
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, ProductWithImages>);
 
-    const result = Object.values(grouped);
+    const result: ProductWithImages[] = Object.values(grouped);
 
     return NextResponse.json(result);
   } catch (error) {

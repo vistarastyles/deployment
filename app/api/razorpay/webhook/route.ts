@@ -1,75 +1,127 @@
 // /app/api/razorpay/webhook/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { orders, carts, cartItems } from "@/db/schema";
 import crypto from "crypto";
 import { eq, and } from "drizzle-orm";
+import { clerkClient } from "@clerk/nextjs/server";
+import { generateInvoicePdf } from "@/lib/generateInvoice";
+import { uploadInvoice } from "@/lib/uploadInvoiceToSupabase";
+import { sendInvoiceEmail } from "@/lib/sendInvoiceEmail";
 
 export async function POST(req: NextRequest) {
-  // 1) Read and verify signature
+  console.log("🔔 [Webhook] Incoming request URL:", req.url);
+
+  // 1) Verify signature
   const rawBody = await req.text();
   const sig = req.headers.get("x-razorpay-signature") || "";
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
-
   const expected = crypto
     .createHmac("sha256", secret)
     .update(rawBody)
     .digest("hex");
   if (sig !== expected) {
+    console.error("❌ Signature mismatch");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  // 2) Parse payload
   const payload = JSON.parse(rawBody);
   if (payload.event !== "payment.captured") {
-    // We only handle successful payments here
+    console.log(`ℹ️ Ignoring event: ${payload.event}`);
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
-  // 3) Extract payment and cart info
+  // 2) Extract payment and user/cart info
   const payment = payload.payload.payment.entity;
   const userId = payment.notes.userId as string;
   const razorpayOrderId = payment.order_id as string;
 
-  // 4) Find the user’s active cart
   const [cart] = await db
     .select()
     .from(carts)
     .where(and(eq(carts.userId, userId), eq(carts.isActive, true)));
-  if (!cart) {
-    return NextResponse.json({ error: "Cart not found" }, { status: 404 });
+
+  const items = cart
+    ? await db.select().from(cartItems).where(eq(cartItems.cartId, cart.id))
+    : [];
+
+  // 3) Update the order record
+  await db
+    .update(orders)
+    .set({
+      paymentId: payment.id,
+      paymentStatus: "paid",
+      shippingAddress: payment.notes.shippingAddress
+        ? JSON.parse(payment.notes.shippingAddress)
+        : null,
+      items: items.map((i) => ({
+        productId: i.productId,
+        title: i.productTitle ?? "",
+        price: Number(i.productSalePrice ?? 0),
+        quantity: i.quantity,
+        selectedSize: i.selectedSize ?? "",
+        selectedColor: i.selectedColor ?? "",
+      })),
+    })
+    .where(eq(orders.razorpayOrderId, razorpayOrderId));
+
+  // 4) Deactivate cart
+  if (cart) {
+    await db
+      .update(carts)
+      .set({ isActive: false })
+      .where(eq(carts.id, cart.id));
   }
 
-  // 5) Fetch cart items
-  const items = await db
-    .select()
-    .from(cartItems)
-    .where(eq(cartItems.cartId, cart.id));
+  // 5) Fetch Clerk user
+  const { users } = await clerkClient();
+  const clerkUser = await users.getUser(userId);
+  const userName = clerkUser.firstName ?? "Customer";
+  const userEmail = clerkUser.emailAddresses[0]?.emailAddress;
+  if (!userEmail) {
+    console.error("❌ No email found for user", userId);
+    return NextResponse.json({ error: "No email for user" }, { status: 500 });
+  }
 
-  // 6) Insert the completed order record
-  await db.insert(orders).values({
-    userId,
-    razorpayOrderId,
-    paymentId: payment.id,
-    paymentMethod: "razorpay",
-    paymentStatus: "paid",
-    amount: payment.amount / 100, // back to rupees
-    shippingAddress: payment.notes.shippingAddress
-      ? JSON.parse(payment.notes.shippingAddress)
-      : null,
-    items: items.map((item) => ({
-      productId: item.productId,
-      title: item.productTitle,
-      price: item.productSalePrice,
-      quantity: item.quantity,
-      selectedSize: item.selectedSize ?? "",
-      selectedColor: item.selectedColor ?? "",
-    })),
+  // 6) Re-fetch the updated order (including its DB id)
+  const [order] = await db
+    .select({
+      id: orders.id,
+      items: orders.items,
+    })
+    .from(orders)
+    .where(eq(orders.razorpayOrderId, razorpayOrderId));
+
+  if (!order) {
+    console.error("❌ Order not found for Razorpay ID", razorpayOrderId);
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  // 7) Generate PDF invoice
+  const invoiceOrder = {
+    id: order.id,
+    user: { name: userName },
+    items: order.items,
+  };
+  const pdfBuffer = await generateInvoicePdf(invoiceOrder);
+
+  // 8) Upload PDF to Supabase storage
+  const publicUrl = await uploadInvoice(order.id, pdfBuffer);
+  console.log("✅ Invoice uploaded to:", publicUrl);
+
+  // 9) Persist the public URL on the order
+  await db
+    .update(orders)
+    .set({ invoiceUrl: publicUrl })
+    .where(eq(orders.id, order.id));
+
+  // 10) Email the customer
+  await sendInvoiceEmail({
+    to: userEmail,
+    name: userName,
+    invoiceUrl: publicUrl, // include the download link in the email
   });
-
-  // 7) Deactivate the cart
-  await db.update(carts).set({ isActive: false }).where(eq(carts.id, cart.id));
+  console.log("📧 Invoice email sent to:", userEmail);
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

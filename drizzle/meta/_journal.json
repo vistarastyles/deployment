@@ -71,6 +71,27 @@
       "when": 1754040739064,
       "tag": "0009_silly_hammerhead",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1754065936530,
+      "tag": "0010_demonic_robin_chapel",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1754173913244,
+      "tag": "0011_needy_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1754242030843,
+      "tag": "0012_brave_speedball",
+      "breakpoints": true
     }
   ]
 }

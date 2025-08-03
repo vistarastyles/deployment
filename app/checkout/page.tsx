@@ -8,6 +8,7 @@ import {
   Lock,
   CheckCircle,
 } from "lucide-react";
+import { Image } from "@/components/Shared";
 
 const CheckoutPage = () => {
   const [formData, setFormData] = useState({
@@ -391,10 +392,12 @@ const CheckoutPage = () => {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex gap-4">
                     <div className="relative w-16 h-16 flex-shrink-0">
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
                         className="w-full h-full object-cover rounded-lg"
+                        width={100}
+                        height={100}
                       />
                       <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                         {item.quantity}

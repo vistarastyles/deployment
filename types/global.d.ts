@@ -117,6 +117,9 @@ declare global {
     alt?: string;
     position?: number;
   }
+  interface ProductWithImages extends Product {
+    images: ProductImage[];
+  }
 
   // ===================== Carts =====================
   interface Cart {
@@ -179,7 +182,6 @@ declare global {
   interface MensTShirtShopProps {
     products: (Product & {
       images: ProductImage[];
-      collection: Collection | null;
     })[];
   }
   interface CartItemWithProduct extends CartItem {

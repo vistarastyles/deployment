@@ -1,43 +1,68 @@
-// /app/order-confirmation/page.tsx
+// File: /app/account/order-confirmation/[paymentId]/page.tsx
+
 import { notFound } from "next/navigation";
 import {
   CheckCircle,
   Package,
   Truck,
-  Clock,
   ArrowRight,
   Download,
   Share2,
 } from "lucide-react";
+import { db } from "@/db";
+import { orders } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import Link from "next/link";
 
 interface Props {
-  searchParams: {
-    paymentId?: string;
-    orderId?: string;
-    amount?: string;
+  params: {
+    paymentId: string;
   };
 }
 
-export default function OrderConfirmation({ searchParams }: Props) {
-  const {
-    paymentId,
-    orderId = "ORD-" + Date.now(),
-    amount = "5097",
-  } = searchParams;
+// JSON column type for order items
+type OrderItem = {
+  productId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  selectedSize: string;
+  selectedColor: string;
+};
+
+export default async function OrderConfirmation({ params }: Props) {
+  const { paymentId } = await Promise.resolve(params);
 
   if (!paymentId) return notFound();
 
+  // Fetch the order record
+  const [order] = await db
+    .select({
+      id: orders.id,
+      razorpayOrderId: orders.razorpayOrderId,
+      paymentId: orders.paymentId,
+      paymentStatus: orders.paymentStatus,
+      invoiceUrl: orders.invoiceUrl,
+      amount: orders.amount,
+      items: orders.items,
+      createdAt: orders.createdAt,
+    })
+    .from(orders)
+    .where(eq(orders.paymentId, paymentId));
+
+  if (!order) return notFound();
+
+  const items = order.items as OrderItem[];
+
+  // Calculate estimated delivery date (5-7 business days)
   const deliveryDate = new Date();
-  deliveryDate.setDate(
-    deliveryDate.getDate() + Math.floor(Math.random() * 3) + 5
-  );
+  deliveryDate.setDate(deliveryDate.getDate() + 6);
   const formattedDeliveryDate = deliveryDate.toLocaleDateString("en-IN", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-
   return (
     <div className="min-h-screen bg-black">
       <div className="max-w-4xl mx-auto px-4 py-16">
@@ -69,41 +94,54 @@ export default function OrderConfirmation({ searchParams }: Props) {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Order Number:</span>
-                    <span className="text-white font-semibold">{orderId}</span>
+                    <span className="text-white font-semibold">
+                      {order.razorpayOrderId}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Payment ID:</span>
                     <code className="text-blue-400 bg-slate-900 px-3 py-1 rounded-lg text-sm font-mono">
-                      {paymentId}
+                      {order.paymentId}
                     </code>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Total Amount:</span>
                     <span className="text-white font-bold text-xl">
-                      ₹{parseInt(amount).toLocaleString()}
+                      ₹
+                      {parseInt(order.amount.toLocaleString()).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Payment Status:</span>
                     <span className="inline-flex items-center gap-2 bg-green-900/30 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                      Completed
+                      {order.paymentStatus}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+              {order.invoiceUrl ? (
+                <Link
+                  href={order.invoiceUrl}
+                  target="_blank"
+                  rel="noopener"
+                  download
+                  className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                >
                   <Download className="w-5 h-5" />
                   Download Invoice
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="inline-flex items-center gap-2 bg-gray-600 text-gray-400 px-6 py-3 rounded-xl font-semibold cursor-not-allowed"
+                >
+                  <Download className="w-5 h-5" />
+                  Invoice Pending
                 </button>
-                <button className="flex items-center justify-center gap-2 border border-slate-600 text-slate-300 hover:bg-slate-700/50 px-6 py-3 rounded-xl font-medium transition-colors">
-                  <Share2 className="w-5 h-5" />
-                  Share Order
-                </button>
-              </div>
+              )}
             </div>
 
             {/* Right Column - Delivery Info */}
@@ -144,6 +182,25 @@ export default function OrderConfirmation({ searchParams }: Props) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Items List */}
+        <div className="bg-slate-800/50 p-6 rounded-2xl mb-8">
+          <h3 className="text-xl font-bold text-white mb-4">Items</h3>
+          {items.map((item) => (
+            <div
+              key={item.productId}
+              className="flex justify-between text-slate-300 mb-2"
+            >
+              <div>
+                {item.title} × {item.quantity}
+                <span className="text-slate-400">
+                  ({item.selectedSize}, {item.selectedColor})
+                </span>
+              </div>
+              <div>₹{(item.price * item.quantity).toLocaleString()}</div>
+            </div>
+          ))}
         </div>
 
         {/* Order Timeline */}
@@ -188,7 +245,9 @@ export default function OrderConfirmation({ searchParams }: Props) {
 
         {/* Next Steps */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 mb-8">
-          <h3 className="text-xl font-bold text-white mb-6">What's Next?</h3>
+          <h3 className="text-xl font-bold text-white mb-6">
+            What&apos;s Next?
+          </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="flex items-start gap-4">
@@ -198,8 +257,8 @@ export default function OrderConfirmation({ searchParams }: Props) {
                 <div>
                   <h4 className="text-white font-semibold">Track Your Order</h4>
                   <p className="text-slate-400 text-sm">
-                    You'll receive tracking information via email and SMS once
-                    your order ships.
+                    You&apos;ll receive tracking information via email and SMS
+                    once your order ships.
                   </p>
                 </div>
               </div>
@@ -241,8 +300,8 @@ export default function OrderConfirmation({ searchParams }: Props) {
                 <div>
                   <h4 className="text-white font-semibold">Easy Returns</h4>
                   <p className="text-slate-400 text-sm">
-                    7-day return policy. Contact us if you're not completely
-                    satisfied.
+                    7-day return policy. Contact us if you&apos;re not
+                    completely satisfied.
                   </p>
                 </div>
               </div>

@@ -1,6 +1,7 @@
+// /app/api/razorpay/serviceability/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { addresses } from "@/db/schema"; // Ensure this matches your schema file
+import { addresses } from "@/db/schema";
 import { getAuth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {

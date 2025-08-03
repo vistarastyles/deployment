@@ -126,7 +126,7 @@ export default function CartClient() {
         name: "Vistara Styles",
         description: `Order of ${totalItems} items`,
         handler: (resp) =>
-          (window.location.href = `/account/order-confirmation?paymentId=${resp.razorpay_payment_id}`),
+          (window.location.href = `/order-confirmation/${resp.razorpay_payment_id}`),
         prefill: {
           name: "",
           email: "",
@@ -344,7 +344,7 @@ export default function CartClient() {
                   disabled={checkoutLoading}
                   className={`w-full ${
                     checkoutLoading
-                      ? "bg-yellow-300"
+                      ? "bg-yellow-500"
                       : "bg-yellow-500 hover:bg-yellow-600"
                   } text-white py-4 rounded-xl font-semibold transition-colors`}
                 >
